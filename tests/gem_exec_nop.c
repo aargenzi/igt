@@ -358,19 +358,6 @@ static void xchg(void *array, unsigned i, unsigned j)
 	u[j] = tmp;
 }
 
-static int __gem_context_create(int fd, uint32_t *ctx_id)
-{
-	struct drm_i915_gem_context_create arg;
-	int ret = 0;
-
-	memset(&arg, 0, sizeof(arg));
-	if (drmIoctl(fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &arg))
-		ret = -errno;
-
-	*ctx_id = arg.ctx_id;
-	return ret;
-}
-
 static void sequential(int fd, uint32_t handle, unsigned flags, int timeout)
 {
 	const int ncpus = flags & FORKED ? sysconf(_SC_NPROCESSORS_ONLN) : 1;

@@ -79,19 +79,6 @@ static void verify_reloc(int fd, uint32_t handle,
 	}
 }
 
-static int __gem_context_create(int fd, uint32_t *ctx_id)
-{
-	struct drm_i915_gem_context_create arg;
-	int ret = 0;
-
-	memset(&arg, 0, sizeof(arg));
-	if (drmIoctl(fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &arg))
-		ret = -errno;
-
-	*ctx_id = arg.ctx_id;
-	return ret;
-}
-
 static bool ignore_engine(int fd, unsigned engine)
 {
 	if (engine == 0)

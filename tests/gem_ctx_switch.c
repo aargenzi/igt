@@ -45,19 +45,6 @@
 
 #define INTERRUPTIBLE 1
 
-static int __gem_context_create(int fd, uint32_t *ctx_id)
-{
-	struct drm_i915_gem_context_create arg;
-	int ret = 0;
-
-	memset(&arg, 0, sizeof(arg));
-	if (drmIoctl(fd, DRM_IOCTL_I915_GEM_CONTEXT_CREATE, &arg))
-		ret = -errno;
-
-	*ctx_id = arg.ctx_id;
-	return ret;
-}
-
 static double elapsed(const struct timespec *start, const struct timespec *end)
 {
 	return ((end->tv_sec - start->tv_sec) +
