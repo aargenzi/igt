@@ -172,14 +172,14 @@ static void emit_recursive_batch(igt_spin_t *spin,
 }
 
 igt_spin_t *
-__igt_spin_batch_new(int fd, uint32_t ctx, unsigned engine, uint32_t dep)
+__igt_spin_batch_new(int fd, igt_spin_opt_t opts)
 {
 	igt_spin_t *spin;
 
 	spin = calloc(1, sizeof(struct igt_spin));
 	igt_assert(spin);
 
-	emit_recursive_batch(spin, fd, ctx, engine, dep);
+	emit_recursive_batch(spin, fd, opts.ctx, opts.engine, opts.dep);
 	igt_assert(gem_bo_busy(fd, spin->handle));
 
 	igt_list_add(&spin->link, &spin_list);
@@ -190,10 +190,13 @@ __igt_spin_batch_new(int fd, uint32_t ctx, unsigned engine, uint32_t dep)
 /**
  * igt_spin_batch_new:
  * @fd: open i915 drm file descriptor
- * @engine: Ring to execute batch OR'd with execbuf flags. If value is less
- *          than 0, execute on all available rings.
- * @dep: handle to a buffer object dependency. If greater than 0, add a
- *              relocation entry to this buffer within the batch.
+ * @opt: structure containing the parameters used by the call:
+ *		- ctx: Context that will be used to submit spinning batch. Provide 0
+ *				to use default context.
+ *		- engine: Ring to execute batch OR'd with execbuf flags. If value
+ *					is less than 0, execute on all available rings.
+ *		- dep: handle to a buffer object dependency. If greater than 0, add a
+ *				relocation entry to this buffer within the batch.
  *
  * Start a recursive batch on a ring. Immediately returns a #igt_spin_t that
  * contains the batch's handle that can be waited upon. The returned structure
@@ -203,11 +206,11 @@ __igt_spin_batch_new(int fd, uint32_t ctx, unsigned engine, uint32_t dep)
  * Structure with helper internal state for igt_spin_batch_free().
  */
 igt_spin_t *
-igt_spin_batch_new(int fd, uint32_t ctx, unsigned engine, uint32_t dep)
+igt_spin_batch_new(int fd, igt_spin_opt_t opts)
 {
 	igt_require_gem(fd);
 
-	return __igt_spin_batch_new(fd, ctx, engine, dep);
+	return __igt_spin_batch_new(fd, opts);
 }
 
 static void notify(union sigval arg)

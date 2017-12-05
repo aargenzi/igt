@@ -692,15 +692,17 @@ static unsigned int run_test_step(struct test_output *o)
 		o->current_fb_id = !o->current_fb_id;
 
 	if (o->flags & TEST_WITH_DUMMY_BCS) {
-		spin_bcs = igt_spin_batch_new(drm_fd, 0, I915_EXEC_BLT,
-					      o->fb_info[o->current_fb_id].gem_handle);
+		spin_bcs = igt_spin_batch_new(drm_fd, (igt_spin_opt_t){
+							.engine = I915_EXEC_BLT,
+							.dep = o->fb_info[o->current_fb_id].gem_handle});
 		igt_spin_batch_set_timeout(spin_bcs,
 					   NSEC_PER_SEC);
 	}
 
 	if (o->flags & TEST_WITH_DUMMY_RCS) {
-		spin_rcs = igt_spin_batch_new(drm_fd, 0, I915_EXEC_RENDER,
-					      o->fb_info[o->current_fb_id].gem_handle);
+		spin_rcs = igt_spin_batch_new(drm_fd, (igt_spin_opt_t){
+							.engine = I915_EXEC_RENDER,
+							.dep = o->fb_info[o->current_fb_id].gem_handle});
 		igt_spin_batch_set_timeout(spin_rcs,
 					   NSEC_PER_SEC);
 	}

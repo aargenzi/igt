@@ -532,7 +532,8 @@ static void basic_flip_cursor(igt_display_t *display,
 
 		spin = NULL;
 		if (flags & BASIC_BUSY)
-			spin = igt_spin_batch_new(display->drm_fd, 0, 0, fb_info.gem_handle);
+			spin = igt_spin_batch_new(display->drm_fd,
+							(igt_spin_opt_t){.dep = fb_info.gem_handle});
 
 		/* Start with a synchronous query to align with the vblank */
 		vblank_start = get_vblank(display->drm_fd, pipe, DRM_VBLANK_NEXTONMISS);
@@ -1298,8 +1299,8 @@ static void flip_vs_cursor_busy_crc(igt_display_t *display, bool atomic)
 		int ncrcs;
 		static const int max_crcs = 8;
 
-		spin = igt_spin_batch_new(display->drm_fd, 0, 0,
-					  fb_info[1].gem_handle);
+		spin = igt_spin_batch_new(display->drm_fd, (igt_spin_opt_t){
+					  .dep = fb_info[1].gem_handle});
 
 		vblank_start = get_vblank(display->drm_fd, pipe, DRM_VBLANK_NEXTONMISS);
 

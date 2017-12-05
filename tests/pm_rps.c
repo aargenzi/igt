@@ -242,7 +242,7 @@ static void load_helper_run(enum load load)
 			}
 			spin[0] = spin[1];
 			spin[lh.load == HIGH] =
-				igt_spin_batch_new(drm_fd, 0, 0, 0);
+				igt_spin_batch_new(drm_fd, (igt_spin_opt_t){.engine = I915_EXEC_DEFAULT});
 		}
 
 		if (spin[0]) {
@@ -488,7 +488,8 @@ static void boost_freq(int fd, int *boost_freqs)
 	int64_t timeout = 1;
 	igt_spin_t *load;
 
-	load = igt_spin_batch_new(fd, 0, 0, 0);
+	load = igt_spin_batch_new(fd, (igt_spin_opt_t){.engine = I915_EXEC_DEFAULT});
+
 	/* Waiting will grant us a boost to maximum */
 	gem_wait(fd, load->handle, &timeout);
 

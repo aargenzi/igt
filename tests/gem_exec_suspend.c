@@ -201,7 +201,7 @@ static void run_test(int fd, unsigned engine, unsigned flags)
 	}
 
 	if (flags & HANG)
-		spin = igt_spin_batch_new(fd, 0, engine, 0);
+		spin = igt_spin_batch_new(fd, (igt_spin_opt_t){.engine = engine});
 
 	switch (mode(flags)) {
 	case NOSLEEP:

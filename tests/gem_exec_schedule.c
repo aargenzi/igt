@@ -148,7 +148,9 @@ static void unplug_show_queue(int fd, struct cork *c, unsigned int engine)
 
 	for (int n = 0; n < ARRAY_SIZE(spin); n++) {
 		uint32_t ctx = create_highest_priority(fd);
-		spin[n] = __igt_spin_batch_new(fd, ctx, engine, 0);
+		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
+													.ctx = ctx,
+													.engine = engine});
 		gem_context_destroy(fd, ctx);
 	}
 
@@ -382,7 +384,9 @@ static void preempt(int fd, unsigned ring, unsigned flags)
 			ctx[LO] = gem_context_create(fd);
 			gem_context_set_priority(fd, ctx[LO], MIN_PRIO);
 		}
-		spin[n] = __igt_spin_batch_new(fd, ctx[LO], ring, 0);
+		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
+													.ctx = ctx[LO],
+													.engine = ring});
 		igt_debug("spin[%d].handle=%d\n", n, spin[n]->handle);
 
 		store_dword(fd, ctx[HI], ring, result, 0, n + 1, 0, I915_GEM_DOMAIN_RENDER);
@@ -434,7 +438,9 @@ static void preempt_other(int fd, unsigned ring)
 
 	n = 0;
 	for_each_engine(fd, other) {
-		spin[n] = __igt_spin_batch_new(fd, ctx[NOISE], other, 0);
+		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
+													.ctx = ctx[NOISE],
+													.engine = other});
 		store_dword(fd, ctx[LO], other,
 			    result, (n + 1)*sizeof(uint32_t), n + 1,
 			    0, I915_GEM_DOMAIN_RENDER);
@@ -487,7 +493,9 @@ static void preempt_self(int fd, unsigned ring)
 	n = 0;
 	gem_context_set_priority(fd, ctx[HI], MIN_PRIO);
 	for_each_engine(fd, other) {
-		spin[n] = __igt_spin_batch_new(fd, ctx[NOISE], other, 0);
+		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
+													.ctx = ctx[NOISE],
+													.engine = other});
 		store_dword(fd, ctx[HI], other,
 			    result, (n + 1)*sizeof(uint32_t), n + 1,
 			    0, I915_GEM_DOMAIN_RENDER);
@@ -529,7 +537,8 @@ static void preemptive_hang(int fd, unsigned ring)
 		ctx[LO] = gem_context_create(fd);
 		gem_context_set_priority(fd, ctx[LO], MIN_PRIO);
 
-		spin[n] = __igt_spin_batch_new(fd, ctx[LO], ring, 0);
+		spin[n] = __igt_spin_batch_new(fd,
+				(igt_spin_opt_t){.ctx = ctx[LO], .engine = ring});
 
 		gem_context_destroy(fd, ctx[LO]);
 	}

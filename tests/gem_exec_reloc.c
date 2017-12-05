@@ -388,7 +388,9 @@ static void basic_reloc(int fd, unsigned before, unsigned after, unsigned flags)
 		}
 
 		if (flags & ACTIVE) {
-			spin = igt_spin_batch_new(fd, 0, I915_EXEC_DEFAULT, obj.handle);
+			spin = igt_spin_batch_new(fd, (igt_spin_opt_t){
+												.engine = I915_EXEC_DEFAULT,
+												.dep = obj.handle});
 			if (!(flags & HANG))
 				igt_spin_batch_set_timeout(spin, NSEC_PER_SEC/100);
 			igt_assert(gem_bo_busy(fd, obj.handle));
@@ -454,7 +456,9 @@ static void basic_reloc(int fd, unsigned before, unsigned after, unsigned flags)
 		}
 
 		if (flags & ACTIVE) {
-			spin = igt_spin_batch_new(fd, 0, I915_EXEC_DEFAULT, obj.handle);
+			spin = igt_spin_batch_new(fd, (igt_spin_opt_t){
+												.engine = I915_EXEC_DEFAULT,
+												.dep = obj.handle});
 			if (!(flags & HANG))
 				igt_spin_batch_set_timeout(spin, NSEC_PER_SEC/100);
 			igt_assert(gem_bo_busy(fd, obj.handle));
@@ -581,7 +585,7 @@ static void basic_range(int fd, unsigned flags)
 	execbuf.buffer_count = n + 1;
 
 	if (flags & ACTIVE) {
-		spin = igt_spin_batch_new(fd, 0, 0, obj[n].handle);
+		spin = igt_spin_batch_new(fd, (igt_spin_opt_t){.dep = obj[n].handle});
 		if (!(flags & HANG))
 			igt_spin_batch_set_timeout(spin, NSEC_PER_SEC/100);
 		igt_assert(gem_bo_busy(fd, obj[n].handle));

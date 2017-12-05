@@ -344,7 +344,9 @@ static void latency_from_ring(int fd,
 			       I915_GEM_DOMAIN_GTT);
 
 		if (flags & PREEMPT)
-			spin = igt_spin_batch_new(fd, ctx[0], ring, 0);
+			spin = igt_spin_batch_new(fd, (igt_spin_opt_t){
+												.ctx = ctx[0],
+												.engine = ring});
 
 		if (flags & CORK) {
 			plug(fd, &c);
