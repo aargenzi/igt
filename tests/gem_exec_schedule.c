@@ -376,7 +376,7 @@ static void preempt(int fd, unsigned ring, unsigned flags)
 	gem_context_set_priority(fd, ctx[HI], MAX_PRIO);
 
 	if (flags & HANG_LP)
-		hang = igt_hang_ctx(fd, ctx[LO], ring, 0, NULL);
+		hang = igt_hang_ctx(fd, (igt_hang_opt_t){.ctx = ctx[LO], .ring = ring});
 
 	for (int n = 0; n < 16; n++) {
 		if (flags & NEW_CTX) {
@@ -543,7 +543,7 @@ static void preemptive_hang(int fd, unsigned ring)
 		gem_context_destroy(fd, ctx[LO]);
 	}
 
-	hang = igt_hang_ctx(fd, ctx[HI], ring, 0, NULL);
+	hang = igt_hang_ctx(fd, (igt_hang_opt_t){.ctx = ctx[HI], .ring = ring});
 	igt_post_hang_ring(fd, hang);
 
 	for (int n = 0; n < 16; n++) {

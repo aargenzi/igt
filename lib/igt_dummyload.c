@@ -70,8 +70,7 @@ fill_reloc(struct drm_i915_gem_relocation_entry *reloc,
 }
 
 static void emit_recursive_batch(igt_spin_t *spin,
-				 int fd, uint32_t ctx, unsigned engine,
-				 uint32_t dep)
+				 int fd, igt_spin_opt_t opts)
 {
 #define SCRATCH 0
 #define BATCH 1
@@ -85,13 +84,13 @@ static void emit_recursive_batch(igt_spin_t *spin,
 	int i;
 
 	nengine = 0;
-	if (engine == -1) {
-		for_each_engine(fd, engine)
-			if (engine)
-				engines[nengine++] = engine;
+	if (opts.engine == -1) {
+		for_each_engine(fd, opts.engine)
+			if (opts.engine)
+				engines[nengine++] = opts.engine;
 	} else {
-		gem_require_ring(fd, engine);
-		engines[nengine++] = engine;
+		gem_require_ring(fd, opts.engine);
+		engines[nengine++] = opts.engine;
 	}
 	igt_require(nengine);
 
@@ -109,11 +108,11 @@ static void emit_recursive_batch(igt_spin_t *spin,
 			I915_GEM_DOMAIN_GTT, I915_GEM_DOMAIN_GTT);
 	execbuf.buffer_count++;
 
-	if (dep) {
+	if (opts.dep) {
 		/* dummy write to dependency */
-		obj[SCRATCH].handle = dep;
+		obj[SCRATCH].handle = opts.dep;
 		fill_reloc(&relocs[obj[BATCH].relocation_count++],
-			   dep, 1020,
+			   opts.dep, 1020,
 			   I915_GEM_DOMAIN_RENDER,
 			   I915_GEM_DOMAIN_RENDER);
 		execbuf.buffer_count++;
@@ -162,7 +161,7 @@ static void emit_recursive_batch(igt_spin_t *spin,
 	obj[BATCH].relocs_ptr = to_user_pointer(relocs);
 
 	execbuf.buffers_ptr = to_user_pointer(obj + (2 - execbuf.buffer_count));
-	execbuf.rsvd1 = ctx;
+	execbuf.rsvd1 = opts.ctx;
 
 	for (i = 0; i < nengine; i++) {
 		execbuf.flags &= ~ENGINE_MASK;
@@ -179,7 +178,7 @@ __igt_spin_batch_new(int fd, igt_spin_opt_t opts)
 	spin = calloc(1, sizeof(struct igt_spin));
 	igt_assert(spin);
 
-	emit_recursive_batch(spin, fd, opts.ctx, opts.engine, opts.dep);
+	emit_recursive_batch(spin, fd, opts);
 	igt_assert(gem_bo_busy(fd, spin->handle));
 
 	igt_list_add(&spin->link, &spin_list);

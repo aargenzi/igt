@@ -250,10 +250,11 @@ static bool has_ctx_exec(int fd, unsigned ring, uint32_t ctx)
 /**
  * igt_hang_ring_ctx:
  * @fd: open i915 drm file descriptor
- * @ctx: the contxt specifier
- * @ring: execbuf ring flag
- * @flags: set of flags to control execution
- * @offset: The resultant gtt offset of the exec obj
+ * @opts: struct wrapping paramters used in this function:
+ *		- ctx: the context specifier
+ *		- ring: execbuf ring flag
+ *		- flags: set of flags to control execution
+ *		- offset: The resultant gtt offset of the exec obj
  *
  * This helper function injects a hanging batch associated with @ctx into @ring.
  * It returns a #igt_hang_t structure which must be passed to
@@ -263,11 +264,7 @@ static bool has_ctx_exec(int fd, unsigned ring, uint32_t ctx)
  * Returns:
  * Structure with helper internal state for igt_post_hang_ring().
  */
-igt_hang_t igt_hang_ctx(int fd,
-			uint32_t ctx,
-			int ring,
-			unsigned flags,
-			uint64_t *offset)
+igt_hang_t igt_hang_ctx(int fd, igt_hang_opt_t opts)
 {
 	struct drm_i915_gem_relocation_entry reloc;
 	struct drm_i915_gem_execbuffer2 execbuf;
@@ -277,15 +274,15 @@ igt_hang_t igt_hang_ctx(int fd,
 	unsigned ban;
 	unsigned len;
 
-	igt_require_hang_ring(fd, ring);
+	igt_require_hang_ring(fd, opts.ring);
 
 	/* check if non-default ctx submission is allowed */
-	igt_require(ctx == 0 || has_ctx_exec(fd, ring, ctx));
+	igt_require(opts.ctx == 0 || has_ctx_exec(fd, opts.ring, opts.ctx));
 
-	param.ctx_id = ctx;
+	param.ctx_id = opts.ctx;
 	param.size = 0;
 
-	if ((flags & HANG_ALLOW_CAPTURE) == 0) {
+	if ((opts.flags & HANG_ALLOW_CAPTURE) == 0) {
 		param.param = I915_CONTEXT_PARAM_NO_ERROR_CAPTURE;
 		param.value = 1;
 		/* Older kernels may not have NO_ERROR_CAPTURE, in which case
@@ -295,10 +292,10 @@ igt_hang_t igt_hang_ctx(int fd,
 		__gem_context_set_param(fd, &param);
 	}
 
-	ban = context_get_ban(fd, ctx);
+	ban = context_get_ban(fd, opts.ctx);
 
-	if ((flags & HANG_ALLOW_BAN) == 0)
-		context_set_ban(fd, ctx, 0);
+	if ((opts.flags & HANG_ALLOW_BAN) == 0)
+		context_set_ban(fd, opts.ctx, 0);
 
 	memset(&reloc, 0, sizeof(reloc));
 	memset(&exec, 0, sizeof(exec));
@@ -324,14 +321,14 @@ igt_hang_t igt_hang_ctx(int fd,
 
 	execbuf.buffers_ptr = to_user_pointer(&exec);
 	execbuf.buffer_count = 1;
-	execbuf.flags = ring;
-	i915_execbuffer2_set_context_id(execbuf, ctx);
+	execbuf.flags = opts.ring;
+	i915_execbuffer2_set_context_id(execbuf, opts.ctx);
 	gem_execbuf(fd, &execbuf);
 
-	if (offset)
-		*offset = exec.offset;
+	if (opts.offset)
+		*opts.offset = exec.offset;
 
-	return (igt_hang_t){ exec.handle, ctx, ban, flags };
+	return (igt_hang_t){ exec.handle, opts.ctx, ban, opts.flags };
 }
 
 /**
@@ -348,7 +345,7 @@ igt_hang_t igt_hang_ctx(int fd,
  */
 igt_hang_t igt_hang_ring(int fd, int ring)
 {
-	return igt_hang_ctx(fd, 0, ring, 0, NULL);
+	return igt_hang_ctx(fd, (igt_hang_opt_t){.ring = ring});
 }
 
 /**

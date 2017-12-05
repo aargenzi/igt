@@ -38,16 +38,20 @@ typedef struct igt_hang {
 	unsigned flags;
 } igt_hang_t;
 
+typedef struct igt_hang_opt {
+	uint32_t ctx;
+	int ring;
+	unsigned flags;
+	uint64_t *offset;
+} igt_hang_opt_t;
+
 igt_hang_t igt_allow_hang(int fd, unsigned ctx, unsigned flags);
 void igt_disallow_hang(int fd, igt_hang_t arg);
 
 #define HANG_POISON 0xc5c5c5c5
 
-igt_hang_t igt_hang_ctx(int fd,
-			uint32_t ctx,
-			int ring,
-			unsigned flags,
-			uint64_t *offset);
+igt_hang_t igt_hang_ctx(int fd, igt_hang_opt_t opts);
+
 #define HANG_ALLOW_BAN 1
 #define HANG_ALLOW_CAPTURE 2
 

@@ -187,7 +187,10 @@ static void test_error_state_capture(unsigned ring_id,
 
 	clear_error_state();
 
-	hang = igt_hang_ctx(device, 0, ring_id, HANG_ALLOW_CAPTURE, &offset);
+	hang = igt_hang_ctx(device, (igt_hang_opt_t){
+										.ring = ring_id,
+										.flags = HANG_ALLOW_CAPTURE,
+										.offset = &offset});
 	batch = gem_mmap__cpu(device, hang.handle, 0, 4096, PROT_READ);
 	gem_set_domain(device, hang.handle, I915_GEM_DOMAIN_CPU, 0);
 	igt_post_hang_ring(device, hang);
