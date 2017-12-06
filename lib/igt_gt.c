@@ -266,13 +266,9 @@ static bool has_ctx_exec(int fd, unsigned ring, uint32_t ctx)
  */
 igt_hang_t igt_hang_ctx(int fd, igt_hang_opt_t opts)
 {
-	struct drm_i915_gem_relocation_entry reloc;
-	struct drm_i915_gem_execbuffer2 execbuf;
-	struct drm_i915_gem_exec_object2 exec;
 	struct drm_i915_gem_context_param param;
-	uint32_t b[16];
 	unsigned ban;
-	unsigned len;
+	igt_spin_t spin;
 
 	igt_require_hang_ring(fd, opts.ring);
 
@@ -297,38 +293,14 @@ igt_hang_t igt_hang_ctx(int fd, igt_hang_opt_t opts)
 	if ((opts.flags & HANG_ALLOW_BAN) == 0)
 		context_set_ban(fd, opts.ctx, 0);
 
-	memset(&reloc, 0, sizeof(reloc));
-	memset(&exec, 0, sizeof(exec));
-	memset(&execbuf, 0, sizeof(execbuf));
-
-	exec.handle = gem_create(fd, 4096);
-	exec.relocation_count = 1;
-	exec.relocs_ptr = to_user_pointer(&reloc);
-
-	memset(b, 0xc5, sizeof(b));
-
-	len = 2;
-	if (intel_gen(intel_get_drm_devid(fd)) >= 8)
-		len++;
-	b[0] = MI_BATCH_BUFFER_START | (len - 2);
-	b[len] = MI_BATCH_BUFFER_END;
-	b[len+1] = MI_NOOP;
-	gem_write(fd, exec.handle, 0, b, sizeof(b));
-
-	reloc.offset = sizeof(uint32_t);
-	reloc.target_handle = exec.handle;
-	reloc.read_domains = I915_GEM_DOMAIN_COMMAND;
-
-	execbuf.buffers_ptr = to_user_pointer(&exec);
-	execbuf.buffer_count = 1;
-	execbuf.flags = opts.ring;
-	i915_execbuffer2_set_context_id(execbuf, opts.ctx);
-	gem_execbuf(fd, &execbuf);
+	emit_recursive_batch(&spin, fd, (igt_spin_opt_t){
+			.ctx = opts.ctx,
+			.engine =  opts.ring});
 
 	if (opts.offset)
-		*opts.offset = exec.offset;
+		*opts.offset = spin.spinning_offset;
 
-	return (igt_hang_t){ exec.handle, opts.ctx, ban, opts.flags };
+	return (igt_hang_t){ spin.handle, opts.ctx, ban, opts.flags };
 }
 
 /**

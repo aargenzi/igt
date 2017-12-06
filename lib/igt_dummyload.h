@@ -35,6 +35,7 @@ typedef struct igt_spin {
 	timer_t timer;
 	struct igt_list link;
 	uint32_t *batch;
+	uint64_t spinning_offset;
 } igt_spin_t;
 
 typedef struct igt_spin_opt {
@@ -43,6 +44,7 @@ typedef struct igt_spin_opt {
 	uint32_t dep;
 } igt_spin_opt_t;
 
+void emit_recursive_batch(igt_spin_t *spin, int fd, igt_spin_opt_t opts);
 igt_spin_t *__igt_spin_batch_new(int fd, igt_spin_opt_t opts);
 igt_spin_t *igt_spin_batch_new(int fd, igt_spin_opt_t opts);
 void igt_spin_batch_set_timeout(igt_spin_t *spin, int64_t ns);

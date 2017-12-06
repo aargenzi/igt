@@ -69,7 +69,7 @@ fill_reloc(struct drm_i915_gem_relocation_entry *reloc,
 	reloc->write_domain = write_domains;
 }
 
-static void emit_recursive_batch(igt_spin_t *spin,
+void emit_recursive_batch(igt_spin_t *spin,
 				 int fd, igt_spin_opt_t opts)
 {
 #define SCRATCH 0
@@ -168,6 +168,8 @@ static void emit_recursive_batch(igt_spin_t *spin,
 		execbuf.flags = engines[i];
 		gem_execbuf(fd, &execbuf);
 	}
+
+	spin->spinning_offset = obj->offset;
 }
 
 igt_spin_t *

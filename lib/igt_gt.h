@@ -26,6 +26,7 @@
 
 #include "igt_debugfs.h"
 #include "igt_core.h"
+#include "igt_dummyload.h"
 
 #include "i915_drm.h"
 
