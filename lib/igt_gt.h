@@ -44,6 +44,7 @@ typedef struct igt_hang_opt {
 	int ring;
 	unsigned flags;
 	uint64_t *offset;
+	bool preemptible;
 } igt_hang_opt_t;
 
 igt_hang_t igt_allow_hang(int fd, unsigned ctx, unsigned flags);
