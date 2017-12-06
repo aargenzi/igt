@@ -35,13 +35,14 @@ typedef struct igt_spin {
 	timer_t timer;
 	struct igt_list link;
 	uint32_t *batch;
-	uint64_t spinning_offset;
+	uint64_t gtt_offset;
 } igt_spin_t;
 
 typedef struct igt_spin_opt {
 	uint32_t ctx;
 	unsigned engine;
 	uint32_t dep;
+	bool preemptible;
 } igt_spin_opt_t;
 
 void emit_recursive_batch(igt_spin_t *spin, int fd, igt_spin_opt_t opts);

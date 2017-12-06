@@ -121,8 +121,8 @@ void emit_recursive_batch(igt_spin_t *spin,
 	spin->batch = batch;
 	spin->handle = obj[BATCH].handle;
 
-	/* Allow ourselves to be preempted */
-	*batch++ = MI_ARB_CHK;
+	if (opts.preemptible)
+		*batch++ = MI_ARB_CHK; /* Allow ourselves to be preempted */
 
 	/* Pad with a few nops so that we do not completely hog the system.
 	 *
@@ -169,7 +169,7 @@ void emit_recursive_batch(igt_spin_t *spin,
 		gem_execbuf(fd, &execbuf);
 	}
 
-	spin->spinning_offset = obj->offset;
+	spin->gtt_offset = obj[BATCH].offset;
 }
 
 igt_spin_t *

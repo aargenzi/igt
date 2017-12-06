@@ -346,7 +346,8 @@ static void latency_from_ring(int fd,
 		if (flags & PREEMPT)
 			spin = igt_spin_batch_new(fd, (igt_spin_opt_t){
 												.ctx = ctx[0],
-												.engine = ring});
+												.engine = ring,
+												.preemptible = true});
 
 		if (flags & CORK) {
 			plug(fd, &c);

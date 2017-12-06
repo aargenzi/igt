@@ -295,10 +295,11 @@ igt_hang_t igt_hang_ctx(int fd, igt_hang_opt_t opts)
 
 	emit_recursive_batch(&spin, fd, (igt_spin_opt_t){
 			.ctx = opts.ctx,
-			.engine =  opts.ring});
+			.engine =  opts.ring,
+			.preemptible = false});
 
 	if (opts.offset)
-		*opts.offset = spin.spinning_offset;
+		*opts.offset = spin.gtt_offset;
 
 	return (igt_hang_t){ spin.handle, opts.ctx, ban, opts.flags };
 }

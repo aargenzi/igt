@@ -623,7 +623,8 @@ static void preempt(int fd, uint32_t handle,
 		igt_spin_t *spin =
 			__igt_spin_batch_new(fd, (igt_spin_opt_t){
 											.ctx = ctx[0],
-											.engine = ring_id});
+											.engine = ring_id,
+											.preemptible = true});
 
 		for (int loop = 0; loop < 1024; loop++)
 			gem_execbuf(fd, &execbuf);

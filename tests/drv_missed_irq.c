@@ -34,7 +34,7 @@ IGT_TEST_DESCRIPTION("Inject missed interrupts and make sure they are caught");
 static void trigger_missed_interrupt(int fd, unsigned ring)
 {
 	igt_spin_t *spin = __igt_spin_batch_new(fd,
-							(igt_spin_opt_t){.engine = ring});
+							(igt_spin_opt_t){.engine = ring, .preemptible = true});
 
 	igt_fork(child, 1) {
 		/* We are now a low priority child on the *same* CPU as the

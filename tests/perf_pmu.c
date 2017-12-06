@@ -141,8 +141,9 @@ single(int gem_fd, const struct intel_execution_engine2 *e, bool busy)
 	fd = open_pmu(I915_PMU_ENGINE_BUSY(e->class, e->instance));
 
 	if (busy) {
-		spin = igt_spin_batch_new(gem_fd,
-								(igt_spin_opt_t){.engine = e2ring(gem_fd, e)});
+		spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+												.engine = e2ring(gem_fd, e),
+												.preemptible = true});
 		igt_spin_batch_set_timeout(spin, batch_duration_ns);
 	} else {
 		usleep(batch_duration_ns / 1000);
@@ -204,8 +205,9 @@ busy_check_all(int gem_fd, const struct intel_execution_engine2 *e,
 
 	igt_assert_eq(i, num_engines);
 
-	spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = e2ring(gem_fd, e)});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+											.engine = e2ring(gem_fd, e),
+											.preemptible = true});
 	igt_spin_batch_set_timeout(spin, batch_duration_ns);
 
 	gem_sync(gem_fd, spin->handle);
@@ -251,7 +253,9 @@ most_busy_check_all(int gem_fd, const struct intel_execution_engine2 *e,
 			idle_idx = i;
 		} else {
 			spin[i] = igt_spin_batch_new(gem_fd,
-								(igt_spin_opt_t){.engine = e2ring(gem_fd, e_)});
+								(igt_spin_opt_t){
+										.engine = e2ring(gem_fd, e_),
+										.preemptible = true});
 			igt_spin_batch_set_timeout(spin[i], batch_duration_ns);
 		}
 
@@ -299,8 +303,9 @@ all_busy_check_all(int gem_fd, const unsigned int num_engines)
 		fd[i] = open_group(I915_PMU_ENGINE_BUSY(e->class, e->instance),
 				   fd[0]);
 
-		spin[i] = igt_spin_batch_new(gem_fd,
-							(igt_spin_opt_t){.engine = e2ring(gem_fd, e)});
+		spin[i] = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+													.engine = e2ring(gem_fd, e),
+													.preemptible = true});
 		igt_spin_batch_set_timeout(spin[i], batch_duration_ns);
 
 		i++;
@@ -331,8 +336,9 @@ no_sema(int gem_fd, const struct intel_execution_engine2 *e, bool busy)
 	open_group(I915_PMU_ENGINE_WAIT(e->class, e->instance), fd);
 
 	if (busy) {
-		spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = e2ring(gem_fd, e)});
+		spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+												.engine = e2ring(gem_fd, e),
+												.preemptible = true});
 		igt_spin_batch_set_timeout(spin, batch_duration_ns);
 	} else {
 		usleep(batch_duration_ns / 1000);
@@ -651,8 +657,9 @@ multi_client(int gem_fd, const struct intel_execution_engine2 *e)
 	 */
 	fd[1] = open_pmu(config);
 
-	spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = e2ring(gem_fd, e)});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+											.engine = e2ring(gem_fd, e),
+											.preemptible = true});
 	igt_spin_batch_set_timeout(spin, 2 * batch_duration_ns);
 
 	slept = measured_usleep(batch_duration_ns / 1000);
@@ -757,8 +764,9 @@ static void cpu_hotplug(int gem_fd)
 	fd = perf_i915_open(I915_PMU_ENGINE_BUSY(I915_ENGINE_CLASS_RENDER, 0));
 	igt_assert(fd >= 0);
 
-	spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = I915_EXEC_RENDER});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+											.engine = I915_EXEC_RENDER,
+											.preemptible = true});
 
 	igt_nsec_elapsed(&start);
 
@@ -871,7 +879,7 @@ test_interrupts(int gem_fd)
 	gem_quiescent_gpu(gem_fd);
 
 	fd = open_pmu(I915_PMU_INTERRUPTS);
-	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){/* All 0s */});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){.preemptible = true});
 
 	obj.handle = gem_create(gem_fd, sz);
 	gem_write(gem_fd, obj.handle, sz - sizeof(bbe), &bbe, sizeof(bbe));
@@ -953,8 +961,9 @@ test_frequency(int gem_fd)
 
 	pmu_read_multi(fd, 2, start);
 
-	spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = I915_EXEC_RENDER});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+											.engine = I915_EXEC_RENDER,
+											.preemptible = true});
 	igt_spin_batch_set_timeout(spin, duration_ns);
 	gem_sync(gem_fd, spin->handle);
 
@@ -979,8 +988,9 @@ test_frequency(int gem_fd)
 
 	pmu_read_multi(fd, 2, start);
 
-	spin = igt_spin_batch_new(gem_fd,
-						(igt_spin_opt_t){.engine = I915_EXEC_RENDER});
+	spin = igt_spin_batch_new(gem_fd, (igt_spin_opt_t){
+											.engine = I915_EXEC_RENDER,
+											.preemptible = true});
 	igt_spin_batch_set_timeout(spin, duration_ns);
 	gem_sync(gem_fd, spin->handle);
 

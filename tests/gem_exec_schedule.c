@@ -150,7 +150,8 @@ static void unplug_show_queue(int fd, struct cork *c, unsigned int engine)
 		uint32_t ctx = create_highest_priority(fd);
 		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
 													.ctx = ctx,
-													.engine = engine});
+													.engine = engine,
+													.preemptible = true});
 		gem_context_destroy(fd, ctx);
 	}
 
@@ -386,7 +387,8 @@ static void preempt(int fd, unsigned ring, unsigned flags)
 		}
 		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
 													.ctx = ctx[LO],
-													.engine = ring});
+													.engine = ring,
+													.preemptible = true});
 		igt_debug("spin[%d].handle=%d\n", n, spin[n]->handle);
 
 		store_dword(fd, ctx[HI], ring, result, 0, n + 1, 0, I915_GEM_DOMAIN_RENDER);
@@ -440,7 +442,8 @@ static void preempt_other(int fd, unsigned ring)
 	for_each_engine(fd, other) {
 		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
 													.ctx = ctx[NOISE],
-													.engine = other});
+													.engine = other,
+													.preemptible = true});
 		store_dword(fd, ctx[LO], other,
 			    result, (n + 1)*sizeof(uint32_t), n + 1,
 			    0, I915_GEM_DOMAIN_RENDER);
@@ -495,7 +498,8 @@ static void preempt_self(int fd, unsigned ring)
 	for_each_engine(fd, other) {
 		spin[n] = __igt_spin_batch_new(fd, (igt_spin_opt_t){
 													.ctx = ctx[NOISE],
-													.engine = other});
+													.engine = other,
+													.preemptible = true});
 		store_dword(fd, ctx[HI], other,
 			    result, (n + 1)*sizeof(uint32_t), n + 1,
 			    0, I915_GEM_DOMAIN_RENDER);
@@ -538,7 +542,7 @@ static void preemptive_hang(int fd, unsigned ring)
 		gem_context_set_priority(fd, ctx[LO], MIN_PRIO);
 
 		spin[n] = __igt_spin_batch_new(fd,
-				(igt_spin_opt_t){.ctx = ctx[LO], .engine = ring});
+				(igt_spin_opt_t){.ctx = ctx[LO], .engine = ring, .preemptible = true});
 
 		gem_context_destroy(fd, ctx[LO]);
 	}

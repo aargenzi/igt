@@ -91,8 +91,10 @@ static void flip_to_fb(igt_display_t *dpy, int pipe,
 	struct timespec tv = { 1, 0 };
 	struct drm_event_vblank ev;
 
-	igt_spin_t *t = igt_spin_batch_new(dpy->drm_fd,
-					   (igt_spin_opt_t){.engine = ring, .dep = fb->gem_handle});
+	igt_spin_t *t = igt_spin_batch_new(dpy->drm_fd, (igt_spin_opt_t){
+														.engine = ring,
+														.dep = fb->gem_handle,
+														.preemptible = true});
 
 	if (modeset) {
 		/*
@@ -210,7 +212,8 @@ static void test_atomic_commit_hang(igt_display_t *dpy, igt_plane_t *primary,
 	igt_spin_t *t = igt_spin_batch_new(dpy->drm_fd,
 					   (igt_spin_opt_t){
 								.engine = ring,
-								.dep = busy_fb->gem_handle});
+								.dep = busy_fb->gem_handle,
+								.preemptible = true});
 	struct pollfd pfd = { .fd = dpy->drm_fd, .events = POLLIN };
 	unsigned flags = 0;
 	struct drm_event_vblank ev;
@@ -299,7 +302,8 @@ static void test_pageflip_modeset_hang(igt_display_t *dpy,
 
 	t = igt_spin_batch_new(dpy->drm_fd, (igt_spin_opt_t){
 												.engine = ring,
-												.dep = fb.gem_handle});
+												.dep = fb.gem_handle,
+												.preemptible = true});
 
 	do_or_die(drmModePageFlip(dpy->drm_fd, dpy->pipes[pipe].crtc_id, fb.fb_id, DRM_MODE_PAGE_FLIP_EVENT, &fb));
 

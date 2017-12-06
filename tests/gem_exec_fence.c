@@ -440,7 +440,8 @@ static void test_parallel(int fd, unsigned int master)
 	 */
 	spin = igt_spin_batch_new(fd, (igt_spin_opt_t){
 										.engine = master,
-										.dep = c.handle});
+										.dep = c.handle,
+										.preemptible = true});
 	resubmit(fd, spin->handle, master, 16);
 
 	/* Now queue the master request and its secondaries */
@@ -963,7 +964,8 @@ static void test_syncobj_unused_fence(int fd)
 	struct local_gem_exec_fence fence = {
 		.handle = syncobj_create(fd),
 	};
-	igt_spin_t *spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	igt_spin_t *spin = igt_spin_batch_new(fd,
+								(igt_spin_opt_t){.preemptible = true});
 
 	/* sanity check our syncobj_to_sync_file interface */
 	igt_assert_eq(__syncobj_to_sync_file(fd, 0), -ENOENT);
@@ -1055,7 +1057,8 @@ static void test_syncobj_signal(int fd)
 	struct local_gem_exec_fence fence = {
 		.handle = syncobj_create(fd),
 	};
-	igt_spin_t *spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	igt_spin_t *spin = igt_spin_batch_new(fd,
+								(igt_spin_opt_t){.preemptible = true});
 
 	/* Check that the syncobj is signaled only when our request/fence is */
 
@@ -1105,7 +1108,7 @@ static void test_syncobj_wait(int fd)
 
 	gem_quiescent_gpu(fd);
 
-	spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	spin = igt_spin_batch_new(fd, (igt_spin_opt_t){.preemptible = true});
 
 	memset(&execbuf, 0, sizeof(execbuf));
 	execbuf.buffers_ptr = to_user_pointer(&obj);
@@ -1175,7 +1178,8 @@ static void test_syncobj_export(int fd)
 		.handle = syncobj_create(fd),
 	};
 	int export[2];
-	igt_spin_t *spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	igt_spin_t *spin = igt_spin_batch_new(fd,
+								(igt_spin_opt_t){.preemptible = true});
 
 	/* Check that if we export the syncobj prior to use it picks up
 	 * the later fence. This allows a syncobj to establish a channel
@@ -1233,7 +1237,8 @@ static void test_syncobj_repeat(int fd)
 	struct drm_i915_gem_execbuffer2 execbuf;
 	struct local_gem_exec_fence *fence;
 	int export;
-	igt_spin_t *spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	igt_spin_t *spin = igt_spin_batch_new(fd,
+								(igt_spin_opt_t){.preemptible = true});
 
 	/* Check that we can wait on the same fence multiple times */
 	fence = calloc(nfences, sizeof(*fence));
@@ -1288,7 +1293,8 @@ static void test_syncobj_import(int fd)
 	const uint32_t bbe = MI_BATCH_BUFFER_END;
 	struct drm_i915_gem_exec_object2 obj;
 	struct drm_i915_gem_execbuffer2 execbuf;
-	igt_spin_t *spin = igt_spin_batch_new(fd, (igt_spin_opt_t){/* All 0s */});
+	igt_spin_t *spin = igt_spin_batch_new(fd,
+								(igt_spin_opt_t){.preemptible = true});
 	uint32_t sync = syncobj_create(fd);
 	int fence;
 
