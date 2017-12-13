@@ -360,6 +360,50 @@ static void promotion(int fd, unsigned ring)
 	munmap(ptr, 4096);
 }
 
+static void reorder_submitted(int fd, unsigned ring)
+{
+	uint32_t ctx[2];
+	igt_spin_t *spin[MAX_ELSP_QLEN];
+	uint32_t result = gem_create(fd, 4096);
+	uint32_t *ptr = gem_mmap__gtt(fd, result, 4096, PROT_READ);
+
+	ctx[LO] = gem_context_create(fd);
+	gem_context_set_priority(fd, ctx[LO], MIN_PRIO);
+
+	ctx[HI] = gem_context_create(fd);
+	gem_context_set_priority(fd, ctx[HI], MAX_PRIO);
+
+	spin[0] = __igt_spin_batch_new(fd,
+			(igt_spin_opt_t){.ctx = ctx[HI], .engine = ring, .preemptible = false});
+	for (int n = 1; n < 16; n++) {
+		spin[n] = __igt_spin_batch_new(fd,
+					(igt_spin_opt_t){.ctx = ctx[LO], .engine = ring, .preemptible = false});
+		igt_debug("LO spin[%d].handle=%d\n", n, spin[n]->handle);
+	}
+
+	gem_context_destroy(fd, ctx[HI]);
+	ctx[HI] = gem_context_create(fd);
+	gem_context_set_priority(fd, ctx[HI], MAX_PRIO);
+
+	store_dword(fd, ctx[HI], ring, result, 0, 0xdeadbeef, 0, I915_GEM_DOMAIN_RENDER);
+	igt_spin_batch_free(fd, spin[0]);
+
+	igt_debugfs_dump(fd, "i915_engine_info"); /* Debug print*/
+
+	gem_set_domain(fd, result, I915_GEM_DOMAIN_GTT, 0);
+	igt_assert_eq_u32(ptr[0], 0xdeadbeef);
+	igt_assert(gem_bo_busy(fd, spin[1]->handle));
+
+	for (int n = 1; n < 16; n++)
+		igt_spin_batch_free(fd, spin[n]);
+
+	gem_context_destroy(fd, ctx[LO]);
+	gem_context_destroy(fd, ctx[HI]);
+
+	munmap(ptr, 4096);
+	gem_close(fd, result);
+}
+
 #define NEW_CTX (0x1 << 0)
 #define HANG_LP (0x1 << 1)
 static void preempt(int fd, unsigned ring, unsigned flags)
@@ -397,6 +441,7 @@ static void preempt(int fd, unsigned ring, unsigned flags)
 		igt_assert_eq_u32(ptr[0], n + 1);
 		igt_assert(gem_bo_busy(fd, spin[0]->handle));
 	}
+	igt_debugfs_dump(fd, "i915_engine_info");
 
 	for (int n = 0; n < 16; n++)
 		igt_spin_batch_free(fd, spin[n]);
@@ -1078,6 +1123,9 @@ igt_main
 
 					igt_subtest_f("preempt-self-%s", e->name)
 						preempt_self(fd, e->exec_id | e->flags);
+
+					igt_subtest_f("reorder-submitted-%s", e->name)
+						reorder_submitted(fd, e->exec_id | e->flags);
 
 					igt_subtest_group {
 						igt_hang_t hang;
