@@ -1064,17 +1064,15 @@ uint64_t gem_aperture_size(int fd)
  *
  * Returns: The mappable gtt address space size.
  */
-uint64_t gem_mappable_aperture_size(void)
+uint64_t gem_mappable_aperture_size(int fd)
 {
-	struct pci_device *pci_dev = intel_get_pci_device();
-	int bar;
+	struct drm_i915_gem_get_aperture aperture;
 
-	if (intel_gen(pci_dev->device_id) < 3)
-		bar = 0;
-	else
-		bar = 2;
+	memset(&aperture, 0, sizeof(aperture));
+	aperture.aper_size = 256*1024*1024;
+	do_ioctl(fd, DRM_IOCTL_I915_GEM_GET_APERTURE, &aperture);
 
-	return pci_dev->regions[bar].size;
+	return aperture.mappable_aperture_size;
 }
 
 /**

@@ -1368,7 +1368,7 @@ static void gem_evict_pwrite_subtest(void)
 	unsigned int num_trash_bos, n;
 	uint32_t buf;
 
-	num_trash_bos = gem_mappable_aperture_size() / (1024*1024) + 1;
+	num_trash_bos = gem_mappable_aperture_size(drm_fd) / (1024*1024) + 1;
 	trash_bos = malloc(num_trash_bos * sizeof(*trash_bos));
 	igt_assert(trash_bos);
 
